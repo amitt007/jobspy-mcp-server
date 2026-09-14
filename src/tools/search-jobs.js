@@ -173,7 +173,15 @@ export function searchJobsHandler(params) {
 
     const args = buildCommandArgs(validatedParams);
     const dockerCmd = process.env.DOCKER_CMD || 'docker';
-    const cmd = `${dockerCmd} run --rm jobspy ${args.join(' ')}`;
+    let cmd;
+    if (dockerCmd === 'python' || dockerCmd === 'python3') {
+      // Cloud mode: call Python script directly (no Docker-in-Docker)
+      const scriptPath = process.env.JOBSPY_SCRIPT || './jobspy-main.py';
+      cmd = `${dockerCmd} ${scriptPath} ${args.join(' ')}`;
+    } else {
+      // Local mode: use Docker
+      cmd = `${dockerCmd} run --rm jobspy ${args.join(' ')}`;
+    }
     logger.info(`Spawning process with args: ${cmd}`);
 
     const timeout = params.timeout || 60000; // Default timeout of 60 seconds
