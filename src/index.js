@@ -61,7 +61,6 @@ async function runServer() {
           res.status(200).json({ status: 'ok' });
         });
 
-        // SSE endpoint for client connections
         app.get('/sse', async (req, res) => {
           const transport = sseManager.createTransport('/messages', res);
 
@@ -69,6 +68,14 @@ async function runServer() {
             sseManager.removeTransport(transport.sessionId);
             logger.info(`Client disconnected: ${transport.sessionId}`);
           });
+
+          try {
+            if (server.server && server.server.transport) {
+              await server.server.close();
+            }
+          } catch (e) {
+            logger.error('Error closing previous transport', { error: e.message });
+          }
 
           await server.connect(transport);
           logger.info(`New SSE client connected: ${transport.sessionId}`);
