@@ -83,6 +83,10 @@ async function runServer() {
           }
 
           await server.connect(transport);
+          
+          // Write 4KB of padding to bypass Envoy/Nginx proxy buffering
+          res.write(`: ${' '.repeat(4096)}\n\n`);
+
           logger.info(`New SSE client connected: ${transport.sessionId}`);
         });
 
