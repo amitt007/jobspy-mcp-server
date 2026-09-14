@@ -62,6 +62,11 @@ async function runServer() {
         });
 
         app.get('/sse', async (req, res) => {
+          // Tell Railway/Nginx proxies not to buffer the SSE stream
+          res.setHeader('X-Accel-Buffering', 'no');
+          res.setHeader('Cache-Control', 'no-cache');
+          res.setHeader('Connection', 'keep-alive');
+
           const transport = sseManager.createTransport('/messages', res);
 
           res.on('close', () => {
